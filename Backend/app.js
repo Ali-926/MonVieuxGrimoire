@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const path = require("path");
+const cors = require("cors");
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ mongoose
   .catch((error) => console.error(error));
 
 app.use(express.json());
+app.use(cors());
 
 app.use("/images", express.static(path.join(__dirname, "images")));
 
