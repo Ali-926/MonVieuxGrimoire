@@ -13,9 +13,12 @@ exports.getOneBook = (req, res) => {
 };
 
 exports.createBook = (req, res) => {
+  const bookObject = JSON.parse(req.body.book);
+
   const book = new Book({
-    ...req.body,
+    ...bookObject,
     userId: req.auth.userId,
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
   });
 
   book
