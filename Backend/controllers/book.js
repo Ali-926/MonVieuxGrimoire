@@ -45,35 +45,53 @@ exports.createBook = async (req, res) => {
   }
 };
 
-exports.updateBook = (req, res) => {
-  Book.findById(req.params.id)
-    .then((book) => {
-      if (book.userId !== req.auth.userId) {
-        return res.status(403).json({ message: "Unauthorized request" });
-      }
+exports.updateBook = async (req, res) => {
+  try {
+    let bookObject;
 
-      let bookObject = {};
+    if (req.file) {
+      // Récupérer le livre existant
+      const book = await Book.findById(req.params.id);
 
-      if (req.file) {
-        const filename = book.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${filename}`, () => {});
+      // Supprimer l'ancienne image
+      const oldFilename = book.imageUrl.split("/images/")[1];
+      fs.unlink(path.join("images", oldFilename), (err) => {
+        if (err) console.log(err);
+      });
 
-        bookObject = {
-          ...JSON.parse(req.body.book),
-          imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-        };
-      } else {
-        bookObject = { ...req.body };
-      }
+      // Parser les données
+      bookObject = JSON.parse(req.body.book);
 
-      Book.updateOne(
-        { _id: req.params.id },
-        { ...bookObject, _id: req.params.id },
-      )
-        .then(() => res.status(200).json({ message: "Book updated" }))
-        .catch((error) => res.status(400).json({ error }));
-    })
-    .catch((error) => res.status(404).json({ error }));
+      // Générer un nouveau nom de fichier
+      const filename = `${Date.now()}-${bookObject.title
+        .replace(/\s+/g, "_")
+        .toLowerCase()}.webp`;
+
+      const outputPath = path.join("images", filename);
+
+      // Optimiser la nouvelle image
+      await sharp(req.file.buffer)
+        .resize({ width: 800 })
+        .webp({ quality: 80 })
+        .toFile(outputPath);
+
+      bookObject.imageUrl = `${req.protocol}://${req.get(
+        "host",
+      )}/images/${filename}`;
+    } else {
+      // Pas de nouvelle image
+      bookObject = { ...req.body };
+    }
+
+    await Book.updateOne(
+      { _id: req.params.id },
+      { ...bookObject, _id: req.params.id },
+    );
+
+    res.status(200).json({ message: "Book updated" });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
 };
 
 exports.deleteBook = (req, res) => {
