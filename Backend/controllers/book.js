@@ -1,5 +1,7 @@
 const Book = require("../models/Book");
+const sharp = require("sharp");
 const fs = require("fs");
+const path = require("path");
 
 exports.getAllBooks = (req, res) => {
   Book.find()
@@ -13,19 +15,34 @@ exports.getOneBook = (req, res) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
-exports.createBook = (req, res) => {
-  const bookObject = JSON.parse(req.body.book);
+exports.createBook = async (req, res) => {
+  try {
+    const bookObject = JSON.parse(req.body.book);
 
-  const book = new Book({
-    ...bookObject,
-    userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-  });
+    // Générer un nom de fichier unique
+    const filename = `${Date.now()}-${bookObject.title
+      .replace(/\s+/g, "_")
+      .toLowerCase()}.webp`;
 
-  book
-    .save()
-    .then(() => res.status(201).json({ message: "Book created" }))
-    .catch((error) => res.status(400).json({ error }));
+    const outputPath = path.join("images", filename);
+
+    // Optimisation avec Sharp
+    await sharp(req.file.buffer)
+      .resize({ width: 800 })
+      .webp({ quality: 80 })
+      .toFile(outputPath);
+
+    const book = new Book({
+      ...bookObject,
+      userId: req.auth.userId,
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${filename}`,
+    });
+
+    await book.save();
+    res.status(201).json({ message: "Book created" });
+  } catch (error) {
+    res.status(400).json({ error });
+  }
 };
 
 exports.updateBook = (req, res) => {
