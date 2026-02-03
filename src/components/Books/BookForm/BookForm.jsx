@@ -90,12 +90,14 @@ function BookForm({ book, validate }) {
         <p>Genre</p>
         <input type="text" id="genre" {...register('genre')} />
       </label>
-      <label htmlFor="rate">
-        <p>Note</p>
-        <div className={styles.Stars}>
-          {generateStarsInputs(rating, register, readOnlyStars)}
-        </div>
-      </label>
+<fieldset className={styles.Rating}>
+  <legend>Note</legend>
+
+  <div className={styles.Stars}>
+    {generateStarsInputs(rating, register, readOnlyStars)}
+  </div>
+</fieldset>
+
       <label htmlFor="file">
         <p>Visuel</p>
         <div className={styles.AddImage}>
