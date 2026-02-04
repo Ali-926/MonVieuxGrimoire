@@ -80,14 +80,18 @@ function Book() {
             </div>
           ) : null}
           <BookInfo book={book} />
-          <BookRatingForm
-            userRated={userRated}
-            userId={connectedUser?.userId}
-            rating={rating}
-            setRating={setRating}
-            setBook={setBook}
-            id={book.id}
-          />
+
+          {/* FIX : on affiche le formulaire UNIQUEMENT si l'utilisateur est connecté */}
+          {connectedUser && (
+            <BookRatingForm
+              userRated={userRated}
+              userId={connectedUser.userId}
+              rating={rating}
+              setRating={setRating}
+              setBook={setBook}
+              id={book.id}
+            />
+          )}
         </div>
       </div>
       <hr />
@@ -113,7 +117,6 @@ function Book() {
         {bookContent}
       </div>
       {book?.delete ? deletedContent : null}
-
     </div>
   );
 }
