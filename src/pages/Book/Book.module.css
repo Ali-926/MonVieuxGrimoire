@@ -48,17 +48,23 @@
     margin-bottom: 75px;
 }
 .BookImage {
-    width: calc(40% - 80px);
+    width: 40%;
+    aspect-ratio: 2 / 3;
     background-position: center;
-    background-size: cover;
+    background-size: contain;
+    background-repeat: no-repeat;
     margin-right: 80px;
     margin-left: 120px;
 }
+
 .Book img {
     width: 40%;
+    aspect-ratio: 2 / 3;
+    object-fit: contain;
     padding-right: 80px;
     padding-left: 120px;
 }
+
 .BookContent {
     width: 60%;
     display: flex;
