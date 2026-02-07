@@ -1,3 +1,8 @@
+/* eslint-disable indent */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable semi */
+/* eslint-disable no-trailing-spaces */
+
 import * as PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,19 +31,18 @@ function BookRatingForm({
       formState.dirtyFields.rating = false;
     }
   }, [formState]);
-  const onSubmit = async () => {
-    if (!connectedUser || !auth) {
-      navigate(APP_ROUTES.SIGN_IN);
-    }
-    const update = await rateBook(id, userId, rating);
-    console.log(update);
-    if (update) {
-      // eslint-disable-next-line no-underscore-dangle
-      setBook({ ...update, id: update._id });
-    } else {
-      alert(update);
-    }
-  };
+const onSubmit = async () => {
+  if (!connectedUser || !auth) {
+    navigate(APP_ROUTES.SIGN_IN);
+  }
+  const update = await rateBook(id, userId, rating);
+  console.log(update);
+  if (update && typeof update === 'object' && update._id) { 
+    setBook({ ...update, id: update._id });
+  } else {
+    alert(update?.message || update || 'Erreur lors de la notation'); 
+  }
+}
   return (
     <div className={styles.BookRatingForm}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -46,7 +50,7 @@ function BookRatingForm({
         <div className={styles.Stars}>
           {!userRated ? generateStarsInputs(rating, register) : displayStars(rating)}
         </div>
-        {!userRated ? <button type="submit">Valider</button> : null}
+        {!userRated ? <button type="submit" disabled={rating === 0}>Valider</button> : null}
       </form>
     </div>
   );

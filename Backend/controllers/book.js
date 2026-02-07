@@ -19,6 +19,24 @@ exports.createBook = async (req, res) => {
   try {
     const bookObject = JSON.parse(req.body.book);
 
+    // Gestion du rating initial
+    if (bookObject.ratings && bookObject.ratings.length > 0) {
+      const initialRating = bookObject.ratings[0];
+      initialRating.userId = req.auth.userId; // Force le userId pour sécurité
+
+      if (initialRating.grade === 0) {
+        bookObject.ratings = [];
+        bookObject.averageRating = 0;
+      } else if (initialRating.grade < 1 || initialRating.grade > 5) {
+        return res.status(400).json({ message: "La note initiale doit être entre 1 et 5" });
+      } else {
+        bookObject.averageRating = initialRating.grade;
+      }
+    } else {
+      bookObject.ratings = [];
+      bookObject.averageRating = 0;
+    }
+
     // Générer un nom de fichier unique
     const filename = `${Date.now()}-${bookObject.title
       .replace(/\s+/g, "_")
@@ -115,8 +133,8 @@ exports.rateBook = (req, res) => {
   const userId = req.auth.userId;
   const grade = req.body.rating;
 
-  if (grade < 0 || grade > 5) {
-    return res.status(400).json({ message: "Rating must be between 0 and 5" });
+  if (grade < 1 || grade > 5) {
+    return res.status(400).json({ message: "Rating must be between 1 and 5" });
   }
 
   Book.findById(req.params.id)
@@ -126,7 +144,7 @@ exports.rateBook = (req, res) => {
       }
 
       const alreadyRated = book.ratings.find(
-        (rating) => rating.userId === userId,
+        (rating) => rating.userId === userId && rating.grade !== 0 
       );
 
       if (alreadyRated) {
@@ -135,13 +153,15 @@ exports.rateBook = (req, res) => {
           .json({ message: "User already rated this book" });
       }
 
+      book.ratings = book.ratings.filter(r => !(r.userId === userId && r.grade === 0));
+
       book.ratings.push({ userId, grade });
 
       const sumRatings = book.ratings.reduce(
         (sum, rating) => sum + rating.grade,
         0,
       );
-      book.averageRating = sumRatings / book.ratings.length;
+      book.averageRating = book.ratings.length > 0 ? sumRatings / book.ratings.length : 0;
 
       book
         .save()

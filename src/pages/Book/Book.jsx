@@ -1,4 +1,8 @@
 /* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable indent */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable semi */
+/* eslint-disable no-trailing-spaces */
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -34,8 +38,13 @@ function Book() {
     if (!userLoading && connectedUser && book?.title) {
       const rate = book.ratings.find((elt) => elt.userId === connectedUser.userId);
       if (rate) {
-        setUserRated(true);
-        setRating(parseInt(rate.grade, 10));
+        if (rate.grade > 0) { 
+          setUserRated(true);
+          setRating(parseInt(rate.grade, 10));
+        } else {
+          setUserRated(false);
+          setRating(0);
+        }
         setLoading(false);
       } else {
         setUserRated(false);
@@ -54,7 +63,7 @@ function Book() {
     // eslint-disable-next-line no-restricted-globals
     const check = confirm('Etes vous sûr de vouloir supprimer ce livre ?');
     if (check) {
-      const del = await deleteBook(book.id);
+      const del = await deleteBook(book._id);
       if (del) {
         setBook((oldValue) => ({ ...oldValue, delete: true }));
       }
@@ -89,7 +98,7 @@ function Book() {
               rating={rating}
               setRating={setRating}
               setBook={setBook}
-              id={book.id}
+              id={book._id}
             />
           )}
         </div>
