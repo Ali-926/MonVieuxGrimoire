@@ -4,7 +4,7 @@
 /* eslint-disable no-trailing-spaces */
 
 import * as PropTypes from 'prop-types';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import styles from './BookRatingForm.module.css';
@@ -24,6 +24,10 @@ function BookRatingForm({
       rating: 0,
     },
   });
+
+  // Nouvel état pour afficher le message de succès
+  const [showSuccess, setShowSuccess] = useState(false);
+
   useEffect(() => {
     if (formState.dirtyFields.rating) {
       const rate = document.querySelector('input[name="rating"]:checked').value;
@@ -31,18 +35,33 @@ function BookRatingForm({
       formState.dirtyFields.rating = false;
     }
   }, [formState]);
-const onSubmit = async () => {
-  if (!connectedUser || !auth) {
-    navigate(APP_ROUTES.SIGN_IN);
-  }
-  const update = await rateBook(id, userId, rating);
-  console.log(update);
-  if (update && typeof update === 'object' && update._id) { 
-    setBook({ ...update, id: update._id });
-  } else {
-    alert(update?.message || update || 'Erreur lors de la notation'); 
-  }
-}
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
+  const onSubmit = async () => {
+    if (!connectedUser || !auth) {
+      navigate(APP_ROUTES.SIGN_IN);
+      return;
+    }
+    const update = await rateBook(id, userId, rating);
+    console.log(update);
+
+    if (update && typeof update === 'object' && update._id) { 
+      setBook({ ...update, id: update._id });
+      // Succès : on affiche le message
+      setShowSuccess(true);
+    } else {
+      alert(update?.message || update || 'Erreur lors de la notation');
+    }
+  };
+
   return (
     <div className={styles.BookRatingForm}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -50,7 +69,19 @@ const onSubmit = async () => {
         <div className={styles.Stars}>
           {!userRated ? generateStarsInputs(rating, register) : displayStars(rating)}
         </div>
-        {!userRated ? <button type="submit" disabled={rating === 0}>Valider</button> : null}
+
+        {!userRated && (
+          <button type="submit" disabled={rating === 0}>
+            Valider
+          </button>
+        )}
+
+        {/* Message de succès qui apparaît après validation */}
+        {showSuccess && (
+          <div className={styles.successMessage}>
+            Merci !
+          </div>
+        )}
       </form>
     </div>
   );
