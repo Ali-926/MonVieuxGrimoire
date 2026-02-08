@@ -4,6 +4,7 @@ import styles from '../../../pages/Book/Book.module.css';
 import { displayStars } from '../../../lib/functions';
 
 function BookInfo({ book }) {
+  const roundedAverageRating = Math.round(book.averageRating * 10) / 10;
   return (
     <div className={styles.BookInfo}>
       <h1>{book.title}</h1>
@@ -12,7 +13,7 @@ function BookInfo({ book }) {
       <p className={styles.Genre}>{book.genre}</p>
       <div className={styles.Rating}>
         <div>{displayStars(book.averageRating)}</div>
-        <p>{`${book.averageRating}/5`}</p>
+        <p>{`${roundedAverageRating}/5`}</p>
       </div>
     </div>
   );
