@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
+/**
+ * Routes liées aux livres
+ * - Séparation entre routes publiques et routes protégées
+ */
+
 const auth = require("../middleware/auth");
 const multer = require("../middleware/multer-config");
 const bookCtrl = require("../controllers/book");
