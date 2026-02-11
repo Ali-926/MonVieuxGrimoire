@@ -14,14 +14,14 @@ const userSchema = mongoose.Schema({
     unique: true,
   },
 
-  // Mot de passe hashé avec bcrypt
+  // Mot de passe chiffré de l'utilisateur
   password: {
     type: String,
     required: true,
   },
 });
 
-// Plugin permettant de garantir l'unicité de l'email
+// Plugin améliorant la gestion des erreurs de validation d'unicité
 userSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("User", userSchema);
